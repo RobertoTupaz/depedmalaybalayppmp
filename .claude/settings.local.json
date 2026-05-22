@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__laravel-boost__application-info",
+      "Bash(php artisan *)",
+      "Bash(mysql -u root -e \"CREATE DATABASE IF NOT EXISTS ppmp_laravel CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;\")",
+      "Bash(C:/xampp/mysql/bin/mysql.exe *)",
+      "mcp__laravel-boost__search-docs",
+      "Bash(vendor/bin/pint --dirty --format agent)",
+      "Bash(npm run *)",
+      "Bash(php -l app/Models/Category.php)",
+      "Bash(php -l app/Models/Office.php)",
+      "Bash(php -l app/Models/Supply.php)",
+      "Bash(php -l app/Models/Order.php)",
+      "Bash(php -l app/Http/Controllers/ReportController.php)",
+      "mcp__laravel-boost__last-error",
+      "mcp__laravel-boost__get-absolute-url",
+      "mcp__laravel-boost__browser-logs",
+      "Bash(dir \"C:\\\\xampp\\\\htdocs\\\\ppmp\\\\vendor\\\\livewire\\\\flux\" /s /b)",
+      "Bash(findstr sidebar *)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "laravel-boost"
+  ]
+}
