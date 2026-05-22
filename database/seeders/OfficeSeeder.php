@@ -134,7 +134,7 @@ class OfficeSeeder extends Seeder
         ];
 
         foreach ($offices as $office) {
-            Office::create($office);
+            Office::firstOrCreate(['name' => $office['name']], $office);
         }
     }
 }

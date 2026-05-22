@@ -924,7 +924,7 @@ class SupplySeeder extends Seeder
         ];
 
         foreach ($supplies as $supply) {
-            Supply::create($supply);
+            Supply::firstOrCreate(['item' => $supply['item']], $supply);
         }
     }
 }
