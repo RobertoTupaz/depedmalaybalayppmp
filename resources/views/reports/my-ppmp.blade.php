@@ -32,30 +32,12 @@
         </thead>
         <tbody>
             @php $grandTotal = 0.0; @endphp
-            @foreach($orders as $order)
+            @foreach($supplySummaries as $row)
                 @php
-                    $supply = $order->supply;
-                    $mup    = $supply->markedUpPrice();
-                    $month  = (int) explode('-', $order->month_needed)[1];
-                    $qty    = $order->quantity;
-
-                    // Build the 16-column array (Jan Feb Mar Q1 | Apr May Jun Q2 | ...)
-                    $cols = array_fill(0, 16, '');
-                    if ($month >= 1 && $month <= 3) {
-                        $cols[$month - 1] = $qty;
-                        $cols[3] = $qty;
-                    } elseif ($month >= 4 && $month <= 6) {
-                        $cols[$month] = $qty;      // col index 4,5,6
-                        $cols[7] = $qty;
-                    } elseif ($month >= 7 && $month <= 9) {
-                        $cols[$month + 1] = $qty;  // col index 8,9,10
-                        $cols[11] = $qty;
-                    } elseif ($month >= 10 && $month <= 12) {
-                        $cols[$month + 2] = $qty;  // col index 12,13,14
-                        $cols[15] = $qty;
-                    }
-
-                    $totalQty   = $qty;
+                    $supply     = $row['supply'];
+                    $cols       = $row['cols'];
+                    $totalQty   = $row['totalQty'];
+                    $mup        = $supply->markedUpPrice();
                     $lineTotal  = round($mup * $totalQty, 2);
                     $grandTotal += $lineTotal;
                 @endphp
@@ -63,7 +45,7 @@
                     <td>{{ $supply->item }}</td>
                     <td class="text-center">{{ $supply->unit_of_measure }}</td>
                     @for($i = 0; $i < 16; $i++)
-                        <td class="text-center">{{ $cols[$i] !== '' ? $cols[$i] : '' }}</td>
+                        <td class="text-center">{{ $cols[$i] !== 0 ? $cols[$i] : '' }}</td>
                     @endfor
                     <td class="text-center">{{ $totalQty }}</td>
                     <td class="text-right">{{ number_format($supply->unit_price, 2) }}</td>

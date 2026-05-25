@@ -11,9 +11,39 @@ class ReportController extends Controller
 {
     public function myPpmp(Office $office): View
     {
-        $orders = $office->orders()->with('supply')->orderBy('created_at')->get();
+        $supplySummaries = $office->orders()->with('supply')->get()
+            ->groupBy('supply_id')
+            ->map(function ($orders) {
+                $supply = $orders->first()->supply;
+                $cols = array_fill(0, 16, 0);
+                $totalQty = 0;
 
-        return view('reports.my-ppmp', compact('office', 'orders'));
+                foreach ($orders as $order) {
+                    $month = (int) explode('-', $order->month_needed)[1];
+                    $qty = $order->quantity;
+                    $totalQty += $qty;
+
+                    if ($month >= 1 && $month <= 3) {
+                        $cols[$month - 1] += $qty;
+                        $cols[3] += $qty;
+                    } elseif ($month >= 4 && $month <= 6) {
+                        $cols[$month] += $qty;
+                        $cols[7] += $qty;
+                    } elseif ($month >= 7 && $month <= 9) {
+                        $cols[$month + 1] += $qty;
+                        $cols[11] += $qty;
+                    } elseif ($month >= 10 && $month <= 12) {
+                        $cols[$month + 2] += $qty;
+                        $cols[15] += $qty;
+                    }
+                }
+
+                return ['supply' => $supply, 'cols' => $cols, 'totalQty' => $totalQty];
+            })
+            ->sortBy(fn ($row) => $row['supply']->item)
+            ->values();
+
+        return view('reports.my-ppmp', compact('office', 'supplySummaries'));
     }
 
     public function groupPpmp(string $group): View
@@ -28,7 +58,7 @@ class ReportController extends Controller
             ->orderBy('item')
             ->get()
             ->map(function (Supply $supply) use ($offices) {
-                $cols     = array_fill(0, 16, 0);
+                $cols = array_fill(0, 16, 0);
                 $totalQty = 0;
 
                 Order::whereIn('office_id', $offices->pluck('id'))
@@ -36,21 +66,21 @@ class ReportController extends Controller
                     ->get()
                     ->each(function (Order $order) use (&$cols, &$totalQty) {
                         $month = (int) explode('-', $order->month_needed)[1];
-                        $qty   = $order->quantity;
+                        $qty = $order->quantity;
                         $totalQty += $qty;
 
                         if ($month >= 1 && $month <= 3) {
                             $cols[$month - 1] += $qty;
-                            $cols[3]          += $qty;
+                            $cols[3] += $qty;
                         } elseif ($month >= 4 && $month <= 6) {
-                            $cols[$month]  += $qty;
-                            $cols[7]       += $qty;
+                            $cols[$month] += $qty;
+                            $cols[7] += $qty;
                         } elseif ($month >= 7 && $month <= 9) {
                             $cols[$month + 1] += $qty;
-                            $cols[11]         += $qty;
+                            $cols[11] += $qty;
                         } elseif ($month >= 10 && $month <= 12) {
                             $cols[$month + 2] += $qty;
-                            $cols[15]         += $qty;
+                            $cols[15] += $qty;
                         }
                     });
 
@@ -70,18 +100,18 @@ class ReportController extends Controller
             ->groupBy('supply_id')
             ->map(function ($orders) use ($offices) {
                 $quantities = [];
-                $total      = 0;
+                $total = 0;
 
                 foreach ($offices as $office) {
-                    $qty                    = $orders->where('office_id', $office->id)->sum('quantity');
+                    $qty = $orders->where('office_id', $office->id)->sum('quantity');
                     $quantities[$office->id] = $qty ?: null;
-                    $total                  += $qty;
+                    $total += $qty;
                 }
 
                 return [
-                    'item'       => $orders->first()->supply->item,
+                    'item' => $orders->first()->supply->item,
                     'quantities' => $quantities,
-                    'total'      => $total,
+                    'total' => $total,
                 ];
             })
             ->sortBy('item')
